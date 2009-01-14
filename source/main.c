@@ -5,6 +5,7 @@
 #include <network.h>
 #include <string.h>
 #include <fat.h>
+#include <mxml.h>
 
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
@@ -79,6 +80,15 @@ int displayInetFile(char *url){
 					sscanf(line, "HTTP/%f %d %s\n", &(response.version), &(response.response_code), response.text);
 				}else if(!strncmp(line, "Content-Length", 14)){
 					sscanf(line, "Content-Length: %d", &response.content_length);
+					printf("Content length found!");
+				}else if(!strncmp(line, "Content-Type", 12)){
+					response.content_length = (char *)malloc(strchr(line, ';')-strchr(line, ' ')+1);
+					response.content_length = (char *)malloc(lineend-strchr(line, '=')+1);
+					sscanf(line, "Content-Type: %s; charset=%s", response.content_type, response.charset);
+					printf("Content length found!");
+				}else if(!strncmp(line, "Last-Modified", 13)){
+					response.modified = (char *)malloc(lineend - strchr(line, ' ')+1);
+					sscanf(line, "Last-Modified: %s", response.modified);
 					printf("Content length found!");
 				}else if(!strcmp(line, "\r")){
 					printf("end of http header\n");
@@ -163,5 +173,6 @@ void reset(){
 
 void printResponse(struct httpresponse response){
 	printf("\tHTTP/%1.1f %d %s\n", response.version, response.response_code, response.text);
-	printf("\t%d bytes long\t\n\n", response.content_length);
+	printf("\t%d bytes long\tModified: %s\n", response.content_length, response.modified);
+	printf("\tContent Type: %s; charset %s\n\n", response.content_type, response.charset);
 }
