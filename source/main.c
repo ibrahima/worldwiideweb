@@ -86,12 +86,14 @@ int displayInetFile(char *url){
 				}else if(!strncmp(line, "Content-Length", 14)){
 					sscanf(line, "Content-Length: %d", &response.content_length);
 				}else if(!strncmp(line, "Content-Type", 12)){
-					response.content_type = (char *)malloc(strchr(line, ';')-strchr(line, ' ')+1);
-					response.charset = (char *)malloc(lineend-strchr(line, '=')+1);
-					sscanf(line, "Content-Type: %s; charset=%s", response.content_type, response.charset);
+					char *space = strchr(line, ' ');
+					char *sc = strchr(space, ';');
+					char *eq = strchr(sc, '=');
+					response.content_type = strndup((space+1), sc-space-1);
+					response.charset = strndup((eq + 1), lineend - eq-1);
 				}else if(!strncmp(line, "Last-Modified", 13)){
-					response.modified = (char *)malloc(lineend - strchr(line, ' ')+1);
-					sscanf(line, "Last-Modified: %s", response.modified);
+					char *space = strchr(line, ' ');
+					response.modified = strndup(space,lineend - space);
 				}else if(!strcmp(line, "\r")){
 					printf("end of http header\n");
 					dataStarted = true;
@@ -124,14 +126,7 @@ int displayInetFile(char *url){
 }
 int main(int argc, char **argv) {
 	init();
-	printf("Wii HTTP Test\n\nAttempting to initialize network\n");
-	/*tries to initialize network*/
-	char *myip = (char *)malloc(16*sizeof(char));
-	if(if_config(myip, NULL, NULL, true)){
-		printf("Failed to initialize network. Goodbye.");
-		exit(-1);
-	}
-	printf("Network initialized. Wii's IP is %s.\n", myip);
+
 
 	displayInetFile(defaulturl);
 	/*the rest is from the template.c in libogc, press home to quit at this point*/
@@ -164,6 +159,16 @@ void init(){
 	if (!fatInitDefault()) {
 		printf("fatInitDefault failure: terminating\n");
 	}
+
+	printf("Wii HTTP Test\n\nAttempting to initialize network\n");
+	/*tries to initialize network*/
+	char *myip = (char *)malloc(16*sizeof(char));
+	if(if_config(myip, NULL, NULL, true)){
+		printf("Failed to initialize network. Goodbye.");
+		exit(-1);
+	}
+	printf("Network initialized. Wii's IP is %s.\n", myip);
+
 	syslog = Syslog_Start("wii");
 	if( !syslog ) {
 		printf("Syslog failed to initialize\n");
