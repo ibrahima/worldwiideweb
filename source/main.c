@@ -12,6 +12,7 @@ static GXRModeObj *rmode = NULL;
 static volatile u8 _reset = 0;
 void init();
 void reset();
+char *defaulturl = "example.com/index.html";
 int displayInetFile(char *url);
 struct httpresponse{
 	float version;
@@ -61,7 +62,7 @@ int displayInetFile(char *url){
 	printf("sent %d of %d bytes\n", sent, len);
 	int bufferlen = 1025;/*creates a buffer for receiving*/
 	char *buf = (char *)malloc(bufferlen);/*creates a buffer for receiving*/
-	int received = 0;
+	unsigned int received = 0;
 	int read = 0;
 	response.text = (char *)malloc(sizeof(char)*32);
 	FILE *fp;
@@ -69,6 +70,7 @@ int displayInetFile(char *url){
 	char *line = (char *)malloc(bufferlen);
 	char *linebegin, *lineend;
 	bool dataStarted = false;
+	int headerlength = 0;
 	while((read = net_read(socket,buf, bufferlen-1))>0){/*while we have more data, read it into the buffer and print it out*/
 		buf[read]='\0';/*null terminate the amount read, not sure if necessary but better safe than sorry*/
 		linebegin = buf;
@@ -80,20 +82,17 @@ int displayInetFile(char *url){
 					sscanf(line, "HTTP/%f %d %s\n", &(response.version), &(response.response_code), response.text);
 				}else if(!strncmp(line, "Content-Length", 14)){
 					sscanf(line, "Content-Length: %d", &response.content_length);
-					printf("Content length found!");
 				}else if(!strncmp(line, "Content-Type", 12)){
-					response.content_length = (char *)malloc(strchr(line, ';')-strchr(line, ' ')+1);
-					response.content_length = (char *)malloc(lineend-strchr(line, '=')+1);
+					response.content_type = (char *)malloc(strchr(line, ';')-strchr(line, ' ')+1);
+					response.charset = (char *)malloc(lineend-strchr(line, '=')+1);
 					sscanf(line, "Content-Type: %s; charset=%s", response.content_type, response.charset);
-					printf("Content length found!");
 				}else if(!strncmp(line, "Last-Modified", 13)){
 					response.modified = (char *)malloc(lineend - strchr(line, ' ')+1);
 					sscanf(line, "Last-Modified: %s", response.modified);
-					printf("Content length found!");
 				}else if(!strcmp(line, "\r")){
 					printf("end of http header\n");
 					dataStarted = true;
-					received-=(lineend - buf + 1);
+					headerlength = lineend - buf + 1;
 				}
 			}
 			else{
@@ -104,6 +103,7 @@ int displayInetFile(char *url){
 		}
 		received+=read;
 	}
+	received-=headerlength;
 	fclose(fp);
 	printResponse(response);
 	if(read==0)
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 	}
 	printf("Network initialized. Wii's IP is %s.\n", myip);
 
-	displayInetFile("example.com/index.html");
+	displayInetFile(defaulturl);
 	/*the rest is from the template.c in libogc, press home to quit at this point*/
 	while(1) {
 		WPAD_ScanPads();
