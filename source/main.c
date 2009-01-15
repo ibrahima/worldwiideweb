@@ -6,6 +6,7 @@
 #include <string.h>
 #include <fat.h>
 #include <mxml.h>
+#include "syslog.h"
 
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
@@ -13,6 +14,8 @@ static volatile u8 _reset = 0;
 void init();
 void reset();
 char *defaulturl = "example.com/index.html";
+syslog_instance_t *syslog;
+
 int displayInetFile(char *url);
 struct httpresponse{
 	float version;
@@ -160,6 +163,20 @@ void init(){
 
 	if (!fatInitDefault()) {
 		printf("fatInitDefault failure: terminating\n");
+	}
+	syslog = Syslog_Start("wii");
+	if( !syslog ) {
+		printf("Syslog failed to initialize\n");
+	/* Error */
+	}
+
+	if( !Syslog_SetDestination(syslog, "192.168.1.8", 514) ) {
+	printf("Syslog error %d: %s\n", Syslog_GetError(syslog),
+	             Syslog_GetErrorMessage(syslog));
+	}
+	if( !Syslog_Send(syslog, SYSLOG_PRI_INTERNAL, SYSLOG_SEV_DEBUG, "syslog: starting")) {
+		printf("Syslog error %d: %s\n", Syslog_GetError(syslog),
+	             Syslog_GetErrorMessage(syslog));
 	}
 }
 /*
