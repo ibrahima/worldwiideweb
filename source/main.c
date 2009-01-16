@@ -16,7 +16,7 @@ void reset();
 char *defaulturl = "example.com/index.html";
 syslog_instance_t *syslog;
 
-int displayInetFile(char *url);
+int displayInetFile(const char *url);
 struct httpresponse{
 	float version;
 	int response_code;
@@ -35,7 +35,7 @@ struct httpresponse{
  */
 
 void printResponse(struct httpresponse response);
-int displayInetFile(char *url){
+int displayInetFile(const char *url){
 	struct httpresponse response;
 	char *filepath = strchr(url, '/');
 	char *hostname = strndup(url, filepath - url);
