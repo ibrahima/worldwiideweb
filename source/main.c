@@ -7,7 +7,9 @@
 #include <fat.h>
 #include <mxml.h>
 #include "syslog.h"
-
+/*
+Author: Ibrahim Awwal
+*/
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
 static volatile u8 _reset = 0;
