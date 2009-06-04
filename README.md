@@ -25,6 +25,14 @@ No, I also just think it'd be a fun project to do. To be honest, I'd like to do
 something significant for the homebrew community, and I don't think I'd be good
 at designing a game so I'm applying my skills to something else.
 
+### What kind of rendering quality can we expect?
+
+Since I've already outlined my goals for this project, which are primarily to
+get something working that can download files easily, the rendering engine will
+be very basic. I wouldn't expect much, if any, CSS support. Of course, if there
+is a fairly portable rendering engine that I can use, I might try to port it
+later, but not until the initial work is done.
+
 ### When will this be released?
 
 Following in the footsteps of many great software developers before me: When it's ready!
