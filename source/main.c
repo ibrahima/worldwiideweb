@@ -5,7 +5,6 @@
 #include <network.h>
 #include <string.h>
 #include <fat.h>
-#include <mxml.h>
 #ifdef SYSLOG
 #include "syslog.h"
 #endif
@@ -18,11 +17,19 @@ static volatile u8 _reset = 0;
 void init();
 void reset();
 char *defaulturl = "example.com/index.html";
+/*Uncomment this part if you want to use tekwarrior's syslog code
+#define SYSLOG 1
+ */
+
 #ifdef SYSLOG
 syslog_instance_t *syslog;
 #endif
 
 int displayInetFile(const char *url);
+/*
+  This struct stores information about the HTTP response. For more information,
+  see RFC 1945 http://www.w3.org/Protocols/rfc1945/rfc1945
+ */
 struct httpresponse{
 	float version;
 	int response_code;
@@ -54,7 +61,7 @@ int displayInetFile(const char *url){
 		return -1;
 	}
 	memset(&server, 0, sizeof(server));/*clears out the sockaddr_in structure, just saw this in an example and not sure if it's needed*/
-	server.sin_family = AF_INET;/*sets the socket type family thing to IPv4*/
+	server.sin_family = AF_INET;/*sets the socket type family to IPv4*/
 	server.sin_port = htons(80);/*uses port 80 for normal HTTP*/
 	memcpy(&server.sin_addr, host->h_addr_list[0], host->h_length);/*copies the host address into the sockaddr_in structure*/
 	if(net_connect(socket, (struct sockaddr *)&server, sizeof(server))){
@@ -63,10 +70,10 @@ int displayInetFile(const char *url){
 	}
 	else
 		printf("Successfully connected!\n");
-
-	char *getstring = (char *)malloc(strlen("GET  HTTP/1.0\r\n\r\n")+strlen(filepath));
+	int len = strlen("GET  HTTP/1.0\r\n\r\n")+strlen(filepath);/*Find the length of the string needed to store the HTTP request*/
+	char *getstring = (char *)malloc(len));
 	sprintf(getstring,"GET %s HTTP/1.0\r\n\r\n", filepath);/*the minimum request necessary to get back a page, the format is GET file HTTP/version\r\n\r\n basically*/
-	int len = strlen(getstring);
+
 	int sent = net_write(socket, getstring, len);/*writes the request to the socket*/
 	printf("sent %d of %d bytes\n", sent, len);
 	int bufferlen = 1025;/*creates a buffer for receiving*/
