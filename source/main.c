@@ -6,10 +6,11 @@
 #include <string.h>
 #include <fat.h>
 #include <mxml.h>
+#ifdef SYSLOG
 #include "syslog.h"
+#endif
 /*
 Author: Ibrahim Awwal
-Trying to push from EGit.
 */
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
@@ -17,7 +18,9 @@ static volatile u8 _reset = 0;
 void init();
 void reset();
 char *defaulturl = "example.com/index.html";
+#ifdef SYSLOG
 syslog_instance_t *syslog;
+#endif
 
 int displayInetFile(const char *url);
 struct httpresponse{
@@ -172,6 +175,7 @@ void init(){
 	}
 	printf("Network initialized. Wii's IP is %s.\n", myip);
 
+	#ifdef SYSLOG
 	syslog = Syslog_Start("wii");
 	if( !syslog ) {
 		printf("Syslog failed to initialize\n");
@@ -186,6 +190,7 @@ void init(){
 		printf("Syslog error %d: %s\n", Syslog_GetError(syslog),
 	             Syslog_GetErrorMessage(syslog));
 	}
+	#endif
 }
 /*
  * This is supposed to be a callback function for when reset is called, but either
