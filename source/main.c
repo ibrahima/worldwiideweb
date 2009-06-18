@@ -178,7 +178,7 @@ void init(){
 	printf("Network initialized. Wii's IP is %s.\n", myip);
 
 	#ifdef DEBUG
-	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8001); // Port 8000 (use whatever you want)
+	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8001); // Port 8001 (use whatever you want)
 	_break();
 	#endif
 }
