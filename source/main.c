@@ -5,6 +5,8 @@
 #include <network.h>
 #include <string.h>
 #include <fat.h>
+/*Uncomment this part if you want to use debugging code */
+#define DEBUG 1
 #ifdef DEBUG
 #include <debug.h>
 #endif
@@ -17,9 +19,8 @@ static volatile u8 _reset = 0;
 void init();
 void reset();
 char *defaulturl = "example.com/index.html";
-/*Uncomment this part if you want to use debugging code
-#define DEBUG 1
- */
+
+
 
 
 /*
