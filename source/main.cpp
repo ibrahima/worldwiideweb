@@ -5,11 +5,13 @@
 #include <network.h>
 #include <string.h>
 #include <fat.h>
-#include <mxml.h>
-#include "syslog.h"
+/*Uncomment this part if you want to use debugging code */
+#define DEBUG 1
+#ifdef DEBUG
+#include <debug.h>
+#endif
 /*
 Author: Ibrahim Awwal
-Trying to push from EGit.
 */
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
@@ -17,9 +19,14 @@ static volatile u8 _reset = 0;
 void init();
 void reset();
 char *defaulturl = "example.com/index.html";
-syslog_instance_t *syslog;
 
-int displayInetFile(const char *url);
+
+
+
+/*
+  This struct stores information about the HTTP response. For more information,
+  see RFC 1945 http://www.w3.org/Protocols/rfc1945/rfc1945
+ */
 struct httpresponse{
 	float version;
 	int response_code;
@@ -32,12 +39,13 @@ struct httpresponse{
 	char *charset;
 
 };
+int displayInetFile(const char *url);
+void printResponse(struct httpresponse response);
 /*
  * Downloads and displays a file from the internet.
  * Returns 0 on success, -1 on error.
  */
 
-void printResponse(struct httpresponse response);
 int displayInetFile(const char *url){
 	struct httpresponse response;
 	char *filepath = strchr(url, '/');
@@ -51,7 +59,7 @@ int displayInetFile(const char *url){
 		return -1;
 	}
 	memset(&server, 0, sizeof(server));/*clears out the sockaddr_in structure, just saw this in an example and not sure if it's needed*/
-	server.sin_family = AF_INET;/*sets the socket type family thing to IPv4*/
+	server.sin_family = AF_INET;/*sets the socket type family to IPv4*/
 	server.sin_port = htons(80);/*uses port 80 for normal HTTP*/
 	memcpy(&server.sin_addr, host->h_addr_list[0], host->h_length);/*copies the host address into the sockaddr_in structure*/
 	if(net_connect(socket, (struct sockaddr *)&server, sizeof(server))){
@@ -60,10 +68,10 @@ int displayInetFile(const char *url){
 	}
 	else
 		printf("Successfully connected!\n");
-
-	char *getstring = (char *)malloc(strlen("GET  HTTP/1.0\r\n\r\n")+strlen(filepath));
+	int len = strlen("GET  HTTP/1.0\r\n\r\n")+strlen(filepath);/*Find the length of the string needed to store the HTTP request*/
+	char *getstring = (char *)malloc(len);
 	sprintf(getstring,"GET %s HTTP/1.0\r\n\r\n", filepath);/*the minimum request necessary to get back a page, the format is GET file HTTP/version\r\n\r\n basically*/
-	int len = strlen(getstring);
+
 	int sent = net_write(socket, getstring, len);/*writes the request to the socket*/
 	printf("sent %d of %d bytes\n", sent, len);
 	int bufferlen = 1025;/*creates a buffer for receiving*/
@@ -129,8 +137,6 @@ int displayInetFile(const char *url){
 }
 int main(int argc, char **argv) {
 	init();
-
-
 	displayInetFile(defaulturl);
 	/*the rest is from the template.c in libogc, press home to quit at this point*/
 	while(1) {
@@ -172,20 +178,10 @@ void init(){
 	}
 	printf("Network initialized. Wii's IP is %s.\n", myip);
 
-	syslog = Syslog_Start("wii");
-	if( !syslog ) {
-		printf("Syslog failed to initialize\n");
-	/* Error */
-	}
-
-	if( !Syslog_SetDestination(syslog, "192.168.1.8", 514) ) {
-	printf("Syslog error %d: %s\n", Syslog_GetError(syslog),
-	             Syslog_GetErrorMessage(syslog));
-	}
-	if( !Syslog_Send(syslog, SYSLOG_PRI_INTERNAL, SYSLOG_SEV_DEBUG, "syslog: starting")) {
-		printf("Syslog error %d: %s\n", Syslog_GetError(syslog),
-	             Syslog_GetErrorMessage(syslog));
-	}
+	#ifdef DEBUG
+	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8001); // Port 8001 (use whatever you want)
+	_break();
+	#endif
 }
 /*
  * This is supposed to be a callback function for when reset is called, but either
