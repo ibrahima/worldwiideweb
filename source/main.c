@@ -16,12 +16,7 @@ Author: Ibrahim Awwal
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
 static volatile u8 _reset = 0;
-void init();
-void reset();
 char *defaulturl = "example.com/index.html";
-
-
-
 
 /*
   This struct stores information about the HTTP response. For more information,
@@ -39,6 +34,7 @@ struct httpresponse{
 	char *charset;
 
 };
+void init();
 int displayInetFile(const char *url);
 void printResponse(struct httpresponse response);
 /*
@@ -163,7 +159,6 @@ void init(){
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 	printf("\x1b[2;0H");
-	SYS_SetResetCallback(reset);/*should set reset as the callback function on reset*/
 
 	if (!fatInitDefault()) {
 		printf("fatInitDefault failure: terminating\n");
@@ -182,14 +177,6 @@ void init(){
 	DEBUG_Init(GDBSTUB_DEVICE_WIFI, 8001); // Port 8001 (use whatever you want)
 	_break();
 	#endif
-}
-/*
- * This is supposed to be a callback function for when reset is called, but either
- * reset doesn't mean pressing home button or I did something wrong.
- */
-void reset(){
-	printf("Hmm, someone wants to reset. Boo.\n");
-	exit(0);
 }
 
 void printResponse(struct httpresponse response){
