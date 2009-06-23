@@ -7,21 +7,31 @@
 #include <fat.h>
 #include <ogc/lwp.h>
 
-/*Uncomment this part if you want to use debugging code */
-#define DEBUG 1
+/*Uncomment this part if you want to use debugging code
+#define DEBUG 1*/
 #ifdef DEBUG
 #include <debug.h>
 #endif
+
+#define NUMTHREADS 10
 /*
 Author: Ibrahim Awwal
 */
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
 void init();
-lwp_t threads[10];
+void *helloGoodbyeThread();
+
+lwp_t threads[NUMTHREADS];
 
 int main(int argc, char **argv) {
 	init();
+	int i;
+	for(i = 0; i<NUMTHREADS; i++){
+		int *arg = (int *)malloc(sizeof(int));
+		*arg = i;
+		LWP_CreateThread(threads + i, &helloGoodbyeThread, arg, NULL,0, 1);
+	}
 	/*the rest is from the template.c in libogc, press home to quit at this point*/
 	while(1) {
 		WPAD_ScanPads();
@@ -33,10 +43,11 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void helloGoodbyeThread(unsigned int threadnum){
-	printf("Hello! I am thread %d", threadnum);
+void *helloGoodbyeThread(int *threadnum){
+	printf("Hello! I am thread %d\n", *threadnum);
 
-	printf("This is thread %d saying goodbye!", threadnum);
+	printf("This is thread %d saying goodbye!\n", *threadnum);
+	return NULL;
 }
 
 void init(){
