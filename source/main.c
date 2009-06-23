@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
 void *helloGoodbyeThread(int *threadnum){
 	printf("Hello! I am thread %d\n", *threadnum);
-
+	LWP_YieldThread();
 	printf("This is thread %d saying goodbye!\n", *threadnum);
 	return NULL;
 }
