@@ -18,6 +18,7 @@ Author: Ibrahim Awwal
 static void *xfb = NULL;
 static GXRModeObj *rmode = NULL;
 void init();
+lwp_t threads[10];
 
 int main(int argc, char **argv) {
 	init();
@@ -33,7 +34,9 @@ int main(int argc, char **argv) {
 }
 
 void helloGoodbyeThread(unsigned int threadnum){
+	printf("Hello! I am thread %d", threadnum);
 
+	printf("This is thread %d saying goodbye!", threadnum);
 }
 
 void init(){
